@@ -15,7 +15,6 @@ import android.os.Environment
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
-import rikka.shizuku.Shizuku
 import java.io.File
 import java.net.Inet4Address
 import java.net.NetworkInterface
@@ -55,12 +54,9 @@ class MonitorService : Service() {
             val timestamp = System.currentTimeMillis()
             val path = "${monitorDir.absolutePath}/$timestamp.png"
             
-            // Explicitly type the arrays to help Kotlin resolve the Java static method visibility
-            val commands: Array<String> = arrayOf("sh", "-c", "screencap -p $path")
-            val env: Array<String>? = null
-            val dir: String? = null
-            
-            val process = Shizuku.newProcess(commands, env, dir)
+            // Use Java helper to bypass Kotlin compiler bug with Shizuku.newProcess visibility
+            val cmd = arrayOf("sh", "-c", "screencap -p $path")
+            val process = ShizukuHelper.execute(cmd, null, null)
             process.waitFor()
         } catch (e: Exception) {
             e.printStackTrace()

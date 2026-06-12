@@ -35,8 +35,6 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'org.nanohttpd:nanohttpd:2.3.1'
     
-    // Shizuku
-    def shizuku_version = '13.1.5'
-    implementation "dev.rikka.shizuku:api:$shizuku_version"
-    implementation "dev.rikka.shizuku:provider:$shizuku_version"
+    // Shizuku - Only the API is needed for client apps! The provider causes the "private access" bug.
+    implementation "dev.rikka.shizuku:api:13.1.5"
 }

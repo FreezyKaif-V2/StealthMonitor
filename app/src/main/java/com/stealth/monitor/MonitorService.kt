@@ -9,18 +9,16 @@ import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
-import android.net.wifi.WifiManager
+import android.net.NetworkRequest
 import android.os.Build
 import android.os.Environment
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
-import android.text.format.Formatter
 import rikka.shizuku.Shizuku
 import java.io.File
 import java.net.Inet4Address
 import java.net.NetworkInterface
-import kotlin.concurrent.thread
 
 class MonitorService : Service() {
 
@@ -56,11 +54,15 @@ class MonitorService : Service() {
         try {
             val timestamp = System.currentTimeMillis()
             val path = "${monitorDir.absolutePath}/$timestamp.png"
-            // Execute screencap via Shizuku (ADB level)
-            val process = Shizuku.newProcess(arrayOf("sh", "-c", "screencap -p $path"), null, null)
+            
+            // Explicitly type the arrays to help Kotlin resolve the Java static method visibility
+            val commands: Array<String> = arrayOf("sh", "-c", "screencap -p $path")
+            val env: Array<String>? = null
+            val dir: String? = null
+            
+            val process = Shizuku.newProcess(commands, env, dir)
             process.waitFor()
         } catch (e: Exception) {
-            // Handle Shizuku not running or permission denied
             e.printStackTrace()
         }
     }
@@ -117,13 +119,12 @@ class MonitorService : Service() {
     }
 
     private fun buildNotification(ip: String): Notification {
-        val notification = Notification.Builder(this, channelId)
+        return Notification.Builder(this, channelId)
             .setContentTitle("System Sync Active")
             .setContentText("View stream: http://$ip:8080")
             .setSmallIcon(android.R.drawable.ic_menu_rotate)
             .setOngoing(true)
             .build()
-        return notification
     }
 
     private fun createNotificationChannel() {

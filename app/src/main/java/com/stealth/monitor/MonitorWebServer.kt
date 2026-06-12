@@ -20,7 +20,7 @@ class MonitorWebServer(port: Int, private val monitorDir: File) : NanoHTTPD(port
     }
 
     private fun serveDashboard(): Response {
-        val files = monitorDir.listFiles()?.sortedByDescending { it.name } ?: emptyArray()
+        val files = monitorDir.listFiles()?.sortedByDescending { it.name }?.toList() ?: emptyList()
         val latestPath = files.firstOrNull()?.name ?: ""
         
         val html = """
@@ -38,8 +38,8 @@ class MonitorWebServer(port: Int, private val monitorDir: File) : NanoHTTPD(port
     }
 
     private fun serveLatestImage(): Response {
-        val files = monitorDir.listFiles()?.sortedByDescending { it.name }
-        val latest = files?.firstOrNull()
+        val files = monitorDir.listFiles()?.sortedByDescending { it.name }?.toList() ?: emptyList()
+        val latest = files.firstOrNull()
         return if (latest != null && latest.exists()) {
             newFixedLengthResponse(Response.Status.OK, "image/png", FileInputStream(latest), latest.length())
         } else {
@@ -58,15 +58,17 @@ class MonitorWebServer(port: Int, private val monitorDir: File) : NanoHTTPD(port
     }
 
     private fun serveZip(): Response {
-        val files = monitorDir.listFiles() ?: emptyArray()
+        val files = monitorDir.listFiles()?.toList() ?: emptyList()
         if (files.isEmpty()) return newFixedLengthResponse("No files to zip")
 
         val tempZip = File.createTempFile("monitor_cache", ".zip")
         ZipOutputStream(tempZip.outputStream().buffered()).use { zos ->
             for (file in files) {
-                zos.putNextEntry(ZipEntry(file.name))
-                FileInputStream(file).use { fis -> fis.copyTo(zos) }
-                zos.closeEntry()
+                if (file.isFile) {
+                    zos.putNextEntry(ZipEntry(file.name))
+                    FileInputStream(file).use { fis -> fis.copyTo(zos) }
+                    zos.closeEntry()
+                }
             }
         }
         return newFixedLengthResponse(Response.Status.OK, "application/zip", FileInputStream(tempZip), tempZip.length())

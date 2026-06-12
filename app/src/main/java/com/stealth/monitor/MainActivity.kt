@@ -58,6 +58,6 @@ class MainActivity : AppCompatActivity() {
         } else {
             startService(intent)
         }
-        finish() // Close activity, run in background
+        finish()
     }
 }

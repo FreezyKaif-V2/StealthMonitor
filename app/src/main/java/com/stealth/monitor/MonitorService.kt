@@ -32,7 +32,7 @@ class MonitorService : Service() {
         override fun run() {
             if (isMonitoring) {
                 captureScreen()
-                handler.postDelayed(this, 3000) // 3 seconds interval
+                handler.postDelayed(this, 3000)
             }
         }
     }
@@ -54,7 +54,6 @@ class MonitorService : Service() {
             val timestamp = System.currentTimeMillis()
             val path = "${monitorDir.absolutePath}/$timestamp.png"
             
-            // Use Java helper to bypass Kotlin compiler bug with Shizuku.newProcess visibility
             val cmd = arrayOf("sh", "-c", "screencap -p $path")
             val process = ShizukuHelper.execute(cmd, null, null)
             process.waitFor()
